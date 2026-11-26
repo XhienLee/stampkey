@@ -1,34 +1,69 @@
 # Stampkey
 
-Prove a file is yours and hasn't changed. Stamp a file with your stamp key, and anyone can check the stamp later in their browser. Nothing is uploaded, and there is no server.
+**Prove a file is yours and has not been changed.**
 
-Part of the key family, small private tools with one key each and no accounts, next to [Sealkey](https://github.com/XhienLee/sealkey) and [Stowkey](https://github.com/XhienLee/stowkey).
+Stamp a file with your 12 secret words and you get a small `.stamp` proof. Anyone can check that proof against the file, without needing your words. If even one letter in the file changes, the check fails.
 
-## How it works
+No account. No server. Everything happens in your browser, and your file never leaves your computer.
 
-1. **Your key:** 12 random words from Sealkey's word list (about 155 bits). Stampkey shows them once and never saves them.
-2. **Your signing key:** the words go through Argon2id (3 passes, 64 MiB) into a 32-byte seed, which makes an Ed25519 key pair. The same words always make the same key.
-3. **Stamping:** your browser hashes the file with BLAKE2b-256, in 4 MiB pieces so large files are fine. It signs the file's name, size, hash and the time. The result is a small `.stamp` file of plain JSON that holds a `stampkey-pub-…` public key and the signature.
-4. **Checking:** the checker's browser hashes the file again and verifies the signature. It reports three separate things: the stamp is genuine, the file matches it, and, if a public key was entered, the signer is the one expected.
-5. **Fingerprint:** every public key also has a 6-word fingerprint to compare by call or in person.
+> **No ready-made website yet.** Stampkey is a plain web page with no server part, so it can go on any static host (Netlify, GitHub Pages, your own site). You can also just open it locally, see "Run it" below.
 
-## What it cannot do
+## What is it good for?
 
-- A stamp proves that whoever holds the key made it, not who that is. Compare the 6-word fingerprint with the signer in person or by call.
-- The time inside a stamp is what the signer's computer said. It is not a trusted timestamp.
-- Stamps cannot be revoked. If your 12 words leak, anyone can stamp as you, so make a new key and tell people.
-- If you lose the words you can't stamp any more, but old stamps still check out.
-- It can't protect you from a hacked device or a changed copy of this website.
+- Proving you had a document, photo or design at a certain time
+- Sending a file and letting the receiver check it really came from you and was not altered
+- Signing release files, contracts or reports without a certificate authority
+
+## How to use it
+
+**Getting your identity (once)**
+1. Press **Make my stamp key**.
+2. Write down your **12 secret words** and tick "I wrote down my 12 words". They let you stamp files. They cannot be reset.
+3. Press **Copy public key** and share it (`stampkey-pub-…`). It is safe to give to anyone.
+
+**Stamping a file**
+1. Type your 12 words, press **Choose file**, then **Stamp this file**.
+2. Download the `.stamp` file and send it along with the original.
+
+**Checking a file**
+1. Press **Choose file** and **Choose .stamp file**.
+2. Paste the signer's public key (optional, but it is how you know who signed).
+3. Press **Check it**. You get a clear valid or not valid answer.
+
+## Is it safe? What can it not do?
+
+- Your file never leaves your computer. Only a fingerprint of it is signed.
+- A valid stamp means *the holder of that key signed exactly this file*. It does not tell you who that person is. Check the public key with the person by another route (a call, a message) so you know it is really theirs.
+- The time in a stamp is the signer's own clock. It shows *when they said they signed*, not a trusted timestamp.
+- Lose the 12 words and you cannot stamp as that identity again. Anyone who gets the words can stamp as you.
+- It cannot protect you from a hacked device or a fake copy of the website.
+
+## Questions
+
+**Does the stamp contain my file?** No, only its name, size and fingerprint.
+**Does it send anything over the internet?** No. After the page loads, all the work happens on your device.
+**Do I need an account?** No. Your 12 words are your identity.
+
+---
+
+## For developers
+
+### How it works
+
+- 12 secret words go through Argon2id into an Ed25519 key. The public key is shown as `stampkey-pub-…` (with a 4-byte check).
+- The file is hashed in streaming chunks with BLAKE2b-256, then the tool signs `['stampkey', 1, name, size, hash, time]`.
+- The `.stamp` file is plain JSON. Anyone can check it with the public key and the file.
+- It is static only: no server, no cookies, no network calls (the CSP blocks them).
 
 ## Run it
 
-It is static files. Serve the folder with anything. To try it on your computer with the same Content-Security-Policy as `_headers` gives on Netlify:
+Any static host works. Try it on your computer:
 
 ```bash
-php -S 127.0.0.1:8800 router.php
+python3 -m http.server 8800
 ```
 
-Then open <http://127.0.0.1:8800>.
+Open <http://localhost:8800>. For Netlify just publish this folder, `_headers` sets the security policy.
 
 ## Tests
 
@@ -38,8 +73,21 @@ pip install -r tests/requirements.txt && python3 -m playwright install chromium
 python3 tests/e2e.py
 ```
 
-The first checks stamping, tampering, wrong signers, public-key typos and big files. The second drives the page in Chromium (it needs `php` for the test server) and checks that nothing is sent anywhere.
+They check signing and checking (including tampered files and wrong keys) and the whole flow in Chromium.
+
+## The key family
+
+Small private tools. One key each, no accounts, nothing to sign up for.
+
+| Tool | What it does | Needs a server? |
+|---|---|---|
+| [Sealkey](https://github.com/XhienLee/sealkey) | Lock a file with a few words, open it later | No |
+| [Stowkey](https://github.com/XhienLee/stowkey) | Private online file storage, one key | Yes (PHP) |
+| [Sendkey](https://github.com/XhienLee/sendkey) | Send a file through a link that works once | Yes (PHP + SQLite) |
+| [Dropkey](https://github.com/XhienLee/dropkey) | A link anyone can use to send *you* a file privately | Yes (PHP + SQLite) |
+| [Stashkey](https://github.com/XhienLee/stashkey) | Private notes you open with 6 words | Yes (PHP + SQLite) |
+| [Stampkey](https://github.com/XhienLee/stampkey) | Prove a file is yours and unchanged | No |
 
 ## Credits
 
-The word list, Argon2 setup and key handling in `js/` come from [Sealkey](https://github.com/XhienLee/sealkey), and the encryption library is [libsodium](https://github.com/jedisct1/libsodium.js) in `vendor/`. MIT licensed.
+The word list, file format and crypto in `js/` come from [Sealkey](https://github.com/XhienLee/sealkey). The encryption library is [libsodium](https://github.com/jedisct1/libsodium.js) in `vendor/`. MIT licensed, free to use and change.
