@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <title>Stampkey: prove a file is yours</title>
+    <meta name="theme-color" content="#E6F0FF" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#12141C" media="(prefers-color-scheme: dark)">
+    <meta name="description" content="Stamp a file with your key. Anyone can check it, in their browser, and nothing is uploaded.">
+    <link rel="icon" href="icons/icon-192.png" type="image/png">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="family/family.css">
+    <script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="bar">
+    <a href="./" class="brand">Stampkey</a>
+</header>
+<main class="page">
+    <h1>Prove a file is yours</h1>
+    <p class="lead">Stamp a file with your stamp key. Anyone can check the stamp later and see two things: that you made it, and that the file hasn't changed. Everything happens in your browser.</p>
+    <div class="stack">
+        <section class="card" aria-labelledby="make-title">
+            <h2 id="make-title">1. Make your stamp key</h2>
+            <p class="lead">Do this once. Stampkey makes 12 secret words and never saves them. Your public key is what people use to check your stamps.</p>
+            <p class="alert" id="make-alert" role="alert" hidden></p>
+            <button type="button" class="btn btn-main" id="make">Make my stamp key</button>
+            <div id="made" hidden>
+                <ol class="key" id="words" aria-label="Your 12 secret words"></ol>
+                <p class="warn"><strong>Write these words down and keep them private.</strong> They are the only way to stamp as you. Stampkey won't show them again.</p>
+                <label class="check"><input type="checkbox" id="saved"> I wrote down my 12 words</label>
+            </div>
+            <div id="public" hidden>
+                <p class="label">Your public key (share this freely)</p>
+                <p class="pubkey mono" id="pubkey"></p>
+                <div class="copy-row"><button type="button" class="btn btn-line btn-small" id="copy-pub">Copy public key</button></div>
+                <p class="label">Your 6-word fingerprint</p>
+                <ol class="key key-small" id="fp" aria-label="Your 6-word fingerprint"></ol>
+                <p class="note">Tell people these 6 words in person or by call, so they know the public key really is yours.</p>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="stamp-title">
+            <h2 id="stamp-title">2. Stamp a file</h2>
+            <p class="alert" id="stamp-alert" role="alert" hidden></p>
+            <label class="label" for="sign-words">Your 12 secret words</label>
+            <textarea class="field mono pubkey-field" id="sign-words" rows="2" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="word word word …"></textarea>
+            <p class="label">The file to stamp</p>
+            <div class="pick">
+                <button type="button" class="btn btn-line btn-small" id="sign-pick">Choose file</button>
+                <span class="small" id="sign-name"></span>
+                <input class="sr-only" type="file" id="sign-file" tabindex="-1" aria-label="Choose the file to stamp">
+            </div>
+            <button type="button" class="btn btn-main btn-wide" id="sign">Stamp this file</button>
+            <p class="alert alert-ok" id="stamp-done" role="status" hidden></p>
+        </section>
+
+        <section class="card" aria-labelledby="check-title">
+            <h2 id="check-title">3. Check a file</h2>
+            <p class="lead">You need the file and its <span class="mono">.stamp</span> file.</p>
+            <p class="alert" id="check-alert" role="alert" hidden></p>
+            <p class="label">The file</p>
+            <div class="pick">
+                <button type="button" class="btn btn-line btn-small" id="check-pick">Choose file</button>
+                <span class="small" id="check-name"></span>
+                <input class="sr-only" type="file" id="check-file" tabindex="-1" aria-label="Choose the file to check">
+            </div>
+            <p class="label">Its stamp</p>
+            <div class="pick">
+                <button type="button" class="btn btn-line btn-small" id="stamp-pick">Choose .stamp file</button>
+                <span class="small" id="stamp-name"></span>
+                <input class="sr-only" type="file" id="check-stamp" accept=".stamp,application/json" tabindex="-1" aria-label="Choose the stamp file">
+            </div>
+            <label class="label" for="expected">The signer's public key (optional)</label>
+            <textarea class="field mono pubkey-field" id="expected" rows="2" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="stampkey-pub-…"></textarea>
+            <button type="button" class="btn btn-main btn-wide" id="check">Check it</button>
+            <div id="result" hidden>
+                <p class="alert" id="verdict" role="status"></p>
+                <div class="result-facts" id="facts"></div>
+                <p class="label">Signer's 6-word fingerprint</p>
+                <ol class="key key-small" id="signer-fp" aria-label="The signer's fingerprint"></ol>
+                <p class="note">A stamp only proves that whoever holds this key made it. Check that these words match the person you expect.</p>
+            </div>
+        </section>
+    </div>
+</main>
+<footer class="footer">
+    <div class="footer-in">
+        <span>Made by Ninth Life Labs</span>
+        <span><a href="https://github.com/XhienLee/stampkey" rel="noreferrer">Source code</a></span>
+    </div>
+</footer>
+</body>
+</html>
